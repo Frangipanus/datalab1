@@ -17,7 +17,20 @@ models = {
     "User mean": user_mean,
 }
 
+results = []
+
 for name, model in models.items():
     predictions = model(train)
     score = rmse(test, predictions)
-    print(f"{name}: {score:.4f}")
+    results.append((name, score))
+
+
+print()
+print("+----------------------+----------+")
+print("| Method               | RMSE     |")
+print("+----------------------+----------+")
+
+for name, score in results:
+    print(f"| {name:<20} | {score:>8.4f} |")
+
+print("+----------------------+----------+")
