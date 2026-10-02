@@ -5,6 +5,7 @@ import time
 from models.baseline import global_mean, movie_mean, user_mean
 from models.als_paul import als
 from models.als_with_biases import als_with_biases
+from models.neumf import complete_matrix_neumf as neumf
 
 
 def rmse(test, predictions):
@@ -39,6 +40,7 @@ def main(train_path, test_path):
         "Global mean": global_mean,
         "Movie mean": movie_mean,
         "User mean": user_mean,
+        "NeuMF": neumf,
         "ALS": als,
         "ALS with biases": als_with_biases
     }
