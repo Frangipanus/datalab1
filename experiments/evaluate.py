@@ -1,13 +1,31 @@
 import argparse
 import numpy as np
+import time
 
 from models.baseline import global_mean, movie_mean, user_mean
 from models.als_paul import als
+from models.als_with_biases import als_with_biases
 
 
 def rmse(test, predictions):
     mask = ~np.isnan(test)
     return np.sqrt(np.mean((test[mask] - predictions[mask]) ** 2))
+
+
+def evaluate(train, test, model, atol=0.25):
+    start_time = time.time()
+
+    try:
+        predictions = model(train)
+    except:
+        return np.nan, np.nan, np.nan
+
+    elapsed_time = time.time() - start_time
+
+    score = rmse(test, predictions)
+    accuracy = np.mean(np.isclose(test[~np.isnan(test)], predictions[~np.isnan(test)], atol=atol)) * 100
+
+    return score, accuracy, elapsed_time
 
 
 def main(train_path, test_path):
@@ -22,28 +40,19 @@ def main(train_path, test_path):
         "Movie mean": movie_mean,
         "User mean": user_mean,
         "ALS": als,
+        "ALS with biases": als_with_biases
     }
 
-    results = []
+    print()
+    print("+----------------------+----------+--------------+----------+")
+    print("| Method               | RMSE     | Accuracy (%) | Time (s) |")
+    print("+----------------------+----------+--------------+----------+")
 
     for name, model in models.items():
-        try:
-            predictions = model(train)
-        except:
-            results.append((name, np.nan))
-            continue
-        score = rmse(test, predictions)
-        results.append((name, score))
+        score, accuracy, elapsed_time = evaluate(train, test, model)
+        print(f"| {name:<20} | {score:>8.4f} | {accuracy:>12.2f} | {elapsed_time:>8.2f} |")
 
-    print()
-    print("+----------------------+----------+")
-    print("| Method               | RMSE     |")
-    print("+----------------------+----------+")
-
-    for name, score in results:
-        print(f"| {name:<20} | {score:>8.4f} |")
-
-    print("+----------------------+----------+")
+    print("+----------------------+----------+--------------+----------+")
 
 
 if __name__ == '__main__':
